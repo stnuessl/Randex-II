@@ -12,12 +12,12 @@ TARGET = Randex-II
 TEMPLATE = app
 
 
-SOURCES += main.cpp\
-        randex.cpp \
-    scheduleview.cpp
+SOURCES += src/main.cpp\
+        src/randex.cpp \
+    src/scheduleview.cpp
 
-HEADERS  += randex.h \
-    scheduleview.h
+HEADERS  += src/randex.h \
+    src/scheduleview.h
 
 FORMS    += randex.ui
 
