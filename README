@@ -1,0 +1,13 @@
+Randex-II
+
+Randex (Random Excercise) is a tool to randomly place people (or anything labeled with an identifier)  to different positions or stations one after the other. Randex will 
+always leave a gap for an identifier between two different positions. 
+
+Patrick Hiemeyer commissioned Randex to Steffen Nuessle, a computer science student at the University of Applied Sciences in Constance, Germany.
+Patrick who was in charge of the excercises at his flight controller apprenticeship needed a tool to quickly assign his fellow students to different positions meeting 
+certain requierments during their excercise runs. 
+For that reason Randex was created.
+
+Randex is releases under the MIT-License.
+
+Germany, 2013 - Patrick Hiemeyer & Steffen Nuessle
