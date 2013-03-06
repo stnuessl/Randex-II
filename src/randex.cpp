@@ -1,6 +1,5 @@
 #include "randex.h"
 #include "ui_randex.h"
-#include "scheduleview.h"
 
 #include <QtGui>
 #include <QVBoxLayout>
@@ -12,14 +11,12 @@
 
 Randex::Randex(QWidget *parent) :
     QMainWindow(parent),
-    _ui(new Ui::Randex), _scheduleView(0)
+    _ui(new Ui::Randex), _scheduleTable(0), _aboutRandex(new AboutRandex())
 {
     _ui->setupUi(this);
-
     _ui->spinBoxPositions->setRange(1, 10);
 
     _setupFileDialog();
-    _setupWidgetAboutRandex();
     _setStatusTips();
     _connect();
 }
@@ -27,101 +24,10 @@ Randex::Randex(QWidget *parent) :
 Randex::~Randex()
 {
     delete _ui;
-    delete _widgetAboutRandex;
+    delete _aboutRandex;
 
-    if(_scheduleView)
-        delete _scheduleView;
-}
-void Randex::_setupWidgetAboutRandex()
-{
-    QTabWidget *tabWidget;
-    QPushButton *pushButtonOk;
-    QSpacerItem *spacerItemLeft, *spacerItemRight;
-    QVBoxLayout *vBoxLayout;
-    QHBoxLayout *hBoxLayout;
-
-    spacerItemLeft  = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Maximum);
-    spacerItemRight = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Maximum);
-
-    tabWidget = new QTabWidget();
-    tabWidget->addTab(_widgetReadme(), "Readme");
-    tabWidget->addTab(_widgetLicense(), "License");
-
-    pushButtonOk = new QPushButton("&0k");
-
-    hBoxLayout = new QHBoxLayout();
-    hBoxLayout->addItem(spacerItemLeft);
-    hBoxLayout->addWidget(pushButtonOk);
-    hBoxLayout->addItem(spacerItemRight);
-
-    vBoxLayout = new QVBoxLayout();
-    vBoxLayout->addWidget(tabWidget);
-    vBoxLayout->addLayout(hBoxLayout);
-
-    _widgetAboutRandex = new QWidget();
-    _widgetAboutRandex->setWindowTitle(QString("About Randex-II"));
-    _widgetAboutRandex->setLayout(vBoxLayout);
-    _widgetAboutRandex->resize(650, 400);
-
-    QObject::connect(pushButtonOk, &QPushButton::clicked, _widgetAboutRandex, &QWidget::close);
-}
-
-QWidget *Randex::_widgetReadme(void)
-{
-    QWidget *widgetReadme;
-    QTextEdit *textEditReadme;
-    QString readme;
-
-    readme.append("Lurchis gotta work to do.\n");
-
-    textEditReadme = new QTextEdit();
-    textEditReadme->setText(readme);
-    textEditReadme->setReadOnly(true);
-
-    widgetReadme = new QWidget();
-    widgetReadme->setLayout(new QVBoxLayout());
-    widgetReadme->layout()->addWidget(textEditReadme);
-
-    return widgetReadme;
-}
-
-QWidget *Randex::_widgetLicense(void)
-{
-    QWidget *widgetLicense;
-    QTextEdit *textEditLicense;
-    QString license;
-
-    license.append(QString("The MIT License (MIT)\n"));
-    license.append(QString("Copyright (c) 2013 Patrick Hiemeyer, Steffen Nuessle\n"));
-    license.append(QString("\n"));
-    license.append(QString("Permission is hereby granted, free of charge, to any person obtaining a copy\n"));
-    license.append(QString("of this software and associated documentation files (the \"Software\"), to deal in\n"));
-    license.append(QString("the Software without restriction, including without limitation the rights to use,\n"));
-    license.append(QString("copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the\n"));
-    license.append(QString("Software, and to permit persons to whom the Software is furnished to do so,\n"));
-    license.append(QString("subject to the following conditions:\n"));
-    license.append(QString("\n"));
-    license.append(QString("The above copyright notice and this permission notice shall be included in all\n"));
-    license.append(QString("copies or substantial portions of the Software.\n"));
-    license.append(QString("\n"));
-    license.append(QString("THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY\n"));
-    license.append(QString("KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE\n"));
-    license.append(QString("WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR\n"));
-    license.append(QString("PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS\n"));
-    license.append(QString("OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR\n"));
-    license.append(QString("OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR\n"));
-    license.append(QString("OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE\n"));
-    license.append(QString("SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n"));
-
-    textEditLicense = new QTextEdit();
-    textEditLicense->setText(license);
-    textEditLicense->setReadOnly(true);
-
-    widgetLicense = new QWidget();
-    widgetLicense->setLayout(new QVBoxLayout());
-    widgetLicense->layout()->addWidget(textEditLicense);
-
-    return widgetLicense;
+    if(_scheduleTable)
+        delete _scheduleTable;
 }
 
 void Randex::_setupFileDialog(void)
@@ -131,7 +37,6 @@ void Randex::_setupFileDialog(void)
     _fileDialog->setViewMode(QFileDialog::List);
     _fileDialog->setNameFilter("Text Files (*.txt)");
     _fileDialog->setWindowModality(Qt::WindowModal);
-
 }
 
 void Randex::_setStatusTips(void)
@@ -191,7 +96,7 @@ void Randex::_createSchedule(void)
     int positionCount;
     QList<unsigned int> listInvalids;
     QTableWidgetItem *item;
-    QTableWidget *tableWidget;
+    QTableWidget tableWidget;
 
     positionCount = _ui->spinBoxPositions->value();
 
@@ -202,15 +107,13 @@ void Randex::_createSchedule(void)
         _ui->labelErrorMessage->clear();
     }
 
-    tableWidget = new QTableWidget(positionCount + 1, _ui->listWidgetIdentifiers->count());
-
-    for(int i = 0; i < _ui->listWidgetIdentifiers->count(); ++i)
-        tableWidget->setHorizontalHeaderItem(i, new QTableWidgetItem(QString("%1").arg(i + 1)));
+    tableWidget.setRowCount(positionCount + 1);
+    tableWidget.setColumnCount(_ui->listWidgetIdentifiers->count());
 
     for(int i = 0; i < positionCount; ++i)
-        tableWidget->setVerticalHeaderItem(i, new QTableWidgetItem(QString("Position %1").arg(i + 1)));
+        tableWidget.setVerticalHeaderItem(i, new QTableWidgetItem(QString("Position %1").arg(i + 1)));
 
-    tableWidget->setVerticalHeaderItem(positionCount, new QTableWidgetItem(QString("Comments")));
+    tableWidget.setVerticalHeaderItem(positionCount, new QTableWidgetItem(QString("Comments")));
 
     for(int i = 0; i < _ui->listWidgetIdentifiers->count(); ++i) {
         val = _validRandomUInt(0, _ui->listWidgetIdentifiers->count() - 1, listInvalids);
@@ -219,7 +122,7 @@ void Randex::_createSchedule(void)
         item = new QTableWidgetItem(_ui->listWidgetIdentifiers->item(val)->text());
         item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsDragEnabled | Qt::ItemIsEnabled);
 
-        tableWidget->setItem(0, i, item);
+        tableWidget.setItem(0, i, item);
     }
 
     if(positionCount > 1) {
@@ -230,7 +133,7 @@ void Randex::_createSchedule(void)
             randGap = _randomUInt(minGap, maxGap);
 
             for(int j = 0; j < _ui->listWidgetIdentifiers->count(); ++j)
-                tableWidget->setItem(i, (j + randGap) % _ui->listWidgetIdentifiers->count(), tableWidget->item(i - 1, j)->clone());
+                tableWidget.setItem(i, (j + randGap) % _ui->listWidgetIdentifiers->count(), tableWidget.item(i - 1, j)->clone());
         }
     }
 
@@ -238,14 +141,37 @@ void Randex::_createSchedule(void)
         item = new QTableWidgetItem();
         item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsDragEnabled | Qt::ItemIsEnabled | Qt::ItemIsEditable);
 
-        tableWidget->setItem(positionCount, i, item);
+        tableWidget.setItem(positionCount, i, item);
     }
 
-    if(_scheduleView)
-        delete _scheduleView;
+    if(_scheduleTable)
+        delete _scheduleTable;
 
-    _scheduleView = new ScheduleView(0, tableWidget);
-    _scheduleView->show();
+    _scheduleTable = new ScheduleTable(0, tableWidget);
+    _scheduleTable->show();
+}
+
+QString Randex::_getFileName(void)
+{
+    QStringList stringList;
+
+    if(_fileDialog->exec() != 1) {
+        _ui->labelErrorMessage->setText(QString("File dialog failed."));
+        return QString();
+    } else {
+        _ui->labelErrorMessage->clear();
+    }
+
+    stringList = _fileDialog->selectedFiles();
+
+    if(stringList.size() != 1) {
+        _ui->labelErrorMessage->setText(QString("Too many files selected."));
+        return QString();
+    } else {
+        _ui->labelErrorMessage->clear();
+    }
+
+    return stringList.takeFirst();
 }
 
 void Randex::_createScheduleTriggered(void)
@@ -260,7 +186,7 @@ void Randex::_quitTriggered(void)
 
 void Randex::_aboutRandexTriggered(void)
 {
-    _widgetAboutRandex->show();
+    _aboutRandex->show();
 }
 
 void Randex::_clearLastClicked(void)
@@ -275,30 +201,13 @@ void Randex::_clearAllClicked(void)
 
 void Randex::_saveClicked(void)
 {
-    QStringList fileNames;
     QFile file;
     QTextStream out;
 
     _fileDialog->setAcceptMode(QFileDialog::AcceptSave);
     _fileDialog->setFileMode(QFileDialog::AnyFile);
 
-    if(_fileDialog->exec() != 1) {
-        _ui->labelErrorMessage->setText(QString("File dialog failed."));
-        return;
-    } else {
-        _ui->labelErrorMessage->clear();
-    }
-
-    fileNames = _fileDialog->selectedFiles();
-
-    if(fileNames.size() != 1) {
-        _ui->labelErrorMessage->setText(QString("Too many files selected."));
-        return;
-    } else {
-        _ui->labelErrorMessage->clear();
-    }
-
-    file.setFileName(fileNames.first());
+    file.setFileName(_getFileName());
 
     if(file.open(QIODevice::WriteOnly | QIODevice::Text) != true) {
         _ui->labelErrorMessage->setText(QString("Opening file failed."));
@@ -315,30 +224,13 @@ void Randex::_saveClicked(void)
 
 void Randex::_loadClicked(void)
 {
-    QStringList fileNames;
     QFile file;
     QTextStream in;
 
     _fileDialog->setAcceptMode(QFileDialog::AcceptOpen);
     _fileDialog->setFileMode(QFileDialog::ExistingFile);
 
-    if(_fileDialog->exec() != 1) {
-        _ui->labelErrorMessage->setText(QString("File dialog failed."));
-        return;
-    } else {
-        _ui->labelErrorMessage->clear();
-    }
-
-    fileNames = _fileDialog->selectedFiles();
-
-    if(fileNames.size() != 1) {
-        _ui->labelErrorMessage->setText(QString("Too many files selected."));
-        return;
-    } else {
-        _ui->labelErrorMessage->clear();
-    }
-
-    file.setFileName(fileNames.first());
+    file.setFileName(_getFileName());
 
     if(file.open(QIODevice::ReadOnly | QIODevice::Text) != true) {
         _ui->labelErrorMessage->setText(QString("Opening file failed."));

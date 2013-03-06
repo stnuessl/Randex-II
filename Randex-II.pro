@@ -14,12 +14,16 @@ TEMPLATE = app
 
 SOURCES += src/main.cpp\
         src/randex.cpp \
-    src/scheduleview.cpp
+    src/scheduletable.cpp \
+    src/aboutrandex.cpp
 
 HEADERS  += src/randex.h \
-    src/scheduleview.h
+    src/scheduletable.h \
+    src/aboutrandex.h
 
-FORMS    += randex.ui
+FORMS    += src/randex.ui \
+    src/scheduletable.ui \
+    src/aboutrandex.ui
 
 OTHER_FILES += \
     LICENSE \

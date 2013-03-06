@@ -5,7 +5,8 @@
 #include <QtGui>
 #include <QFileDialog>
 
-#include "scheduleview.h"
+#include "scheduletable.h"
+#include "aboutrandex.h"
 
 namespace Ui {
 class Randex;
@@ -20,14 +21,11 @@ public:
     ~Randex();
     
 private:
-    Ui::Randex   *_ui;
-    ScheduleView *_scheduleView;
-    QWidget      *_widgetAboutRandex;
-    QFileDialog  *_fileDialog;
+    Ui::Randex    *_ui;
+    ScheduleTable *_scheduleTable;
+    AboutRandex   *_aboutRandex;
+    QFileDialog   *_fileDialog;
 
-    void _setupWidgetAboutRandex(void);
-    QWidget *_widgetReadme(void);
-    QWidget *_widgetLicense(void);
 
     void _setupFileDialog(void);
     void _setStatusTips(void);
@@ -39,6 +37,8 @@ private:
                                   unsigned int max,
                                   QList<unsigned int> listInvalids)     const;
     void _createSchedule(void);
+
+    QString _getFileName(void);
 
 private slots:
     /* action handles */
