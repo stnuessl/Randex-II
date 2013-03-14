@@ -120,7 +120,7 @@ void Randex::_createSchedule(void)
         listInvalids.append(val);
 
         item = new QTableWidgetItem(_ui->listWidgetIdentifiers->item(val)->text());
-        item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsDragEnabled | Qt::ItemIsEnabled);
+        item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsDragEnabled | Qt::ItemIsEnabled | Qt::ItemIsEditable);
 
         tableWidget.setItem(0, i, item);
     }
